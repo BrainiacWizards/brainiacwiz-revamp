@@ -29,6 +29,7 @@ model User {
 model Quiz {
   id          String       @id @default(cuid())
   title       String
+  gamePin     String?      @unique // 6-digit pin for players to join
   hostId      String
   host        User         @relation("HostQuizzes", fields: [hostId], references: [id])
   questions   Question[]

@@ -323,7 +323,7 @@ export default function GamesPage() {
 								<CardHeader className="p-0">
 									<Image
 										alt={quiz.title}
-										className="object-cover h-48 w-full"
+										className="object-cover h-48 max-h-48 w-full"
 										height={300}
 										src={quiz.image}
 										width={500}
