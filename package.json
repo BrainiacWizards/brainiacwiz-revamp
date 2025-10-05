@@ -4,11 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint --fix",
     "check": "eslint . --fix && tsc --noEmit",
-    "preinstall": "npx prisma generate"
+    "prisma:generate": "prisma generate"
   },
   "dependencies": {
     "@eslint/compat": "^1.4.0",
@@ -68,7 +68,7 @@
     "react-dom": "18.3.1"
   },
   "devDependencies": {
-    "@next/eslint-plugin-next": "15.3.4",
+    "@next/eslint-plugin-next": "latest",
     "@react-types/shared": "3.30.0",
     "@tailwindcss/postcss": "4.1.11",
     "@types/node": "24.6.2",

@@ -5,13 +5,13 @@ import unusedImports from "eslint-plugin-unused-imports";
 import _import from "eslint-plugin-import";
 import typescriptEslint from "@typescript-eslint/eslint-plugin";
 import jsxA11Y from "eslint-plugin-jsx-a11y";
-import prettier from "eslint-plugin-prettier";
 import globals from "globals";
 import tsParser from "@typescript-eslint/parser";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import js from "@eslint/js";
 import { FlatCompat } from "@eslint/eslintrc";
+import nextPlugin from "@next/eslint-plugin-next";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -50,7 +50,6 @@ export default defineConfig([
 		extends: fixupConfigRules(
 			compat.extends(
 				"plugin:react/recommended",
-				"plugin:prettier/recommended",
 				"plugin:react-hooks/recommended",
 				"plugin:jsx-a11y/recommended",
 				"plugin:@next/next/recommended",
@@ -63,7 +62,7 @@ export default defineConfig([
 			import: fixupPluginRules(_import),
 			"@typescript-eslint": typescriptEslint,
 			"jsx-a11y": fixupPluginRules(jsxA11Y),
-			prettier: fixupPluginRules(prettier),
+			"@next/next": fixupPluginRules(nextPlugin),
 		},
 
 		languageOptions: {
@@ -80,12 +79,26 @@ export default defineConfig([
 				ecmaFeatures: {
 					jsx: true,
 				},
+				project: "./tsconfig.json",
+				tsconfigRootDir: __dirname,
 			},
 		},
 
 		settings: {
 			react: {
 				version: "detect",
+			},
+			next: {
+				rootDir: __dirname,
+			},
+			"import/resolver": {
+				typescript: {
+					alwaysTryTypes: true,
+					project: "./tsconfig.json",
+				},
+				node: {
+					extensions: [".js", ".jsx", ".ts", ".tsx"],
+				},
 			},
 		},
 
@@ -99,7 +112,6 @@ export default defineConfig([
 			"react-hooks/exhaustive-deps": "off",
 			"jsx-a11y/click-events-have-key-events": "warn",
 			"jsx-a11y/interactive-supports-focus": "warn",
-			"prettier/prettier": "warn",
 			"no-unused-vars": "off",
 			"unused-imports/no-unused-vars": "off",
 			"unused-imports/no-unused-imports": "warn",
@@ -169,6 +181,10 @@ export default defineConfig([
 					next: ["const", "let", "var"],
 				},
 			],
+
+			"@next/next/no-html-link-for-pages": ["error", "app/"],
+			"@next/next/no-img-element": "warn",
+			"@next/next/no-sync-scripts": "error",
 		},
 	},
 ]);
