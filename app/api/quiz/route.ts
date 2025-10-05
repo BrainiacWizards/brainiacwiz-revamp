@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getCurrentUser, getOrCreateDbUser } from "@/lib/auth";
+import { Prisma } from "@/app/generated/prisma";
 
 export async function POST(request: Request) {
 	try {
@@ -41,7 +42,7 @@ export async function POST(request: Request) {
 		}
 
 		// Create the quiz and its questions in a transaction
-		const quiz = await prisma.$transaction(async (tx: any) => {
+		const quiz = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
 			// Create the quiz
 			const newQuiz = await tx.quiz.create({
 				data: {
