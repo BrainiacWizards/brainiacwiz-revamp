@@ -12,7 +12,6 @@ import { Textarea } from "@heroui/input";
 import { Chip } from "@heroui/chip";
 import { Tooltip } from "@heroui/tooltip";
 import { Spinner } from "@heroui/spinner";
-import { Toast } from "@heroui/toast";
 import { motion } from "framer-motion";
 
 import { title, subtitle } from "@/components/primitives";
