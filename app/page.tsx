@@ -115,7 +115,7 @@ export default function Home() {
 			{/* Hero Section */}
 			<section className="flex flex-col items-center justify-center gap-8 pt-10 md:pt-24 px-4">
 				<motion.div
-					className="text-center"
+					className="text-center flex flex-col gap-4"
 					initial={{ opacity: 0, y: 20 }}
 					animate={{ opacity: 1, y: 0 }}
 					transition={{ duration: 0.6 }}>
@@ -192,18 +192,19 @@ export default function Home() {
 					whileInView={{ opacity: 1, y: 0 }}
 					viewport={{ once: true }}
 					transition={{ duration: 0.6 }}>
-					<h2 className={title({ size: "sm", class: "mb-4" })}>Featured Quizzes</h2>
-
-					<Tabs
-						aria-label="Quiz categories"
-						selectedKey={activeTab}
-						onSelectionChange={setActiveTab as any}
-						color="primary"
-						className="mb-6">
-						<Tab key="popular" title="Popular" />
-						<Tab key="newest" title="Newest" />
-						<Tab key="biggest" title="Biggest Prize" />
-					</Tabs>
+					<div className="flex items-center justify-between mb-6">
+						<h2 className={title({ size: "sm", class: "mb-4" })}>Featured Quizzes</h2>
+						<Tabs
+							aria-label="Quiz categories"
+							selectedKey={activeTab}
+							onSelectionChange={setActiveTab as any}
+							color="primary"
+							className="mb-6">
+							<Tab key="popular" title="Popular" />
+							<Tab key="newest" title="Newest" />
+							<Tab key="biggest" title="Biggest Prize" />
+						</Tabs>
+					</div>
 
 					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 						{sampleQuizzes.map((quiz) => (
@@ -275,7 +276,7 @@ export default function Home() {
 					whileInView={{ opacity: 1 }}
 					viewport={{ once: true }}
 					transition={{ duration: 0.8 }}
-					className="max-w-6xl mx-auto">
+					className="max-w-6xl mx-auto flex flex-col gap-4">
 					<h2
 						className={title({
 							size: "sm",
@@ -337,7 +338,7 @@ export default function Home() {
 						<h2 className={title({ size: "sm" })}>
 							Try A <span className={title({ color: "pink" })}>Demo Quiz</span>
 						</h2>
-						<p className={subtitle({ class: "!w-full" })}>
+						<p className={subtitle({ class: "!w-full mt-6" })}>
 							Experience the excitement of BrainiacWiz with our demo quiz. Test your
 							knowledge, see your score, and learn how easy it is to participate.
 						</p>
@@ -467,11 +468,12 @@ export default function Home() {
 			{/* Testimonials Section */}
 			<section className="w-full px-6">
 				<motion.div
+					className="flex flex-col gap-6"
 					initial={{ opacity: 0 }}
 					whileInView={{ opacity: 1 }}
 					viewport={{ once: true }}
 					transition={{ duration: 0.8 }}>
-					<h2 className={title({ size: "sm", class: "mb-8 text-center" })}>
+					<h2 className={title({ size: "sm", class: "text-center" })}>
 						Player Testimonials
 					</h2>
 
