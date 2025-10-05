@@ -1,9 +1,13 @@
-import { title } from "@/components/primitives";
+// brainiacwiz about us page
+import React from "react";
 
-export default function AboutPage() {
-  return (
-    <div>
-      <h1 className={title()}>About</h1>
-    </div>
-  );
-}
+const AboutPage = () => {
+	return (
+		<div>
+			<h1>About Us</h1>
+			<p>Learn more about BrainiacWiz and our mission.</p>
+		</div>
+	);
+};
+
+export default AboutPage;
