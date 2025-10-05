@@ -7,7 +7,6 @@ import { Card, CardBody, CardFooter } from "@heroui/card";
 import { Tabs, Tab } from "@heroui/tabs";
 import { Avatar } from "@heroui/avatar";
 import { Image } from "@heroui/image";
-import { Badge } from "@heroui/badge";
 import { Chip } from "@heroui/chip";
 import { ScrollShadow } from "@heroui/scroll-shadow";
 import { Progress } from "@heroui/progress";
@@ -211,9 +210,9 @@ export default function Home() {
 									</CardBody>
 									<CardFooter className="flex flex-col items-start text-left">
 										<div className="flex items-center justify-between w-full mb-2">
-											<Badge color="primary" variant="flat">
+											<Chip color="primary" variant="flat">
 												{quiz.category}
-											</Badge>
+											</Chip>
 											<div className="flex items-center gap-1">
 												<HeartFilledIcon
 													className="text-danger"
@@ -244,7 +243,7 @@ export default function Home() {
 							as={Link}
 							className="font-medium"
 							color="primary"
-							href="/play/leaderboard/global"
+							href="/games"
 							radius="full"
 							variant="ghost">
 							View All Quizzes
