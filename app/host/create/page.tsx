@@ -2,18 +2,16 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Card, CardBody, CardHeader, CardFooter } from "@heroui/card";
+import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Input } from "@heroui/input";
 import { Button } from "@heroui/button";
 import { Select, SelectItem } from "@heroui/select";
 import { Tabs, Tab } from "@heroui/tabs";
-import { Divider } from "@heroui/divider";
 import { Textarea } from "@heroui/input";
 import { Chip } from "@heroui/chip";
 import { Tooltip } from "@heroui/tooltip";
-import { Spinner } from "@heroui/spinner";
-import { Toast } from "@heroui/toast";
 import { motion } from "framer-motion";
+import { addToast } from "@heroui/toast";
 
 import { title, subtitle } from "@/components/primitives";
 
@@ -32,13 +30,7 @@ const categories = [
 
 export default function CreateQuizPage() {
 	const router = useRouter();
-	// Helper function to show toast notifications
-	const showToast = (message: string, color?: "danger" | "success" | "warning") => {
-		// Using Toast component directly
-		console.log(`Toast: ${message} (${color})`);
-		// In a real implementation, we would display a toast notification
-		// For now, just log to console since we're having issues with the Toast API
-	};
+
 	const [activeTab, setActiveTab] = useState("details");
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -100,7 +92,7 @@ export default function CreateQuizPage() {
 	// Remove a question
 	const removeQuestion = (index: number) => {
 		if (questions.length <= 1) {
-			showToast("You must have at least one question", "warning");
+			addToast({ title: "You must have at least one question", color: "warning" });
 			return;
 		}
 
@@ -118,7 +110,7 @@ export default function CreateQuizPage() {
 
 		// Validate quiz details
 		if (!quizTitle.trim()) {
-			showToast("Please enter a quiz title", "danger");
+			addToast({ title: "Please enter a quiz title", color: "danger" });
 			setActiveTab("details");
 			return;
 		}
@@ -127,7 +119,7 @@ export default function CreateQuizPage() {
 		let isValid = true;
 		questions.forEach((q, i) => {
 			if (!q.text.trim()) {
-				showToast(`Question ${i + 1} needs text`, "danger");
+				addToast({ title: `Question ${i + 1} needs text`, color: "danger" });
 				setActiveTab("questions");
 				setCurrentQuestion(i);
 				isValid = false;
@@ -135,7 +127,10 @@ export default function CreateQuizPage() {
 
 			q.options.forEach((opt, j) => {
 				if (!opt.trim()) {
-					showToast(`Question ${i + 1}, Option ${j + 1} needs text`, "danger");
+					addToast({
+						title: `Question ${i + 1}, Option ${j + 1} needs text`,
+						color: "danger",
+					});
 					setActiveTab("questions");
 					setCurrentQuestion(i);
 					isValid = false;
@@ -174,13 +169,16 @@ export default function CreateQuizPage() {
 			}
 
 			const data = await response.json();
-			showToast("Quiz created successfully!", "success");
+			addToast({ title: "Quiz created successfully!", color: "success" });
 
 			// Redirect to the quiz page
 			router.push(`/host/quiz?id=${data.quiz.id}`);
 		} catch (error) {
 			console.error("Error creating quiz:", error);
-			showToast(error instanceof Error ? error.message : "Failed to create quiz", "danger");
+			addToast({
+				title: error instanceof Error ? error.message : "Failed to create quiz",
+				color: "danger",
+			});
 		} finally {
 			setIsSubmitting(false);
 		}

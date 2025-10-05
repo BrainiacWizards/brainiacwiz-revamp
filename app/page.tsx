@@ -80,7 +80,6 @@ const howItWorks = [
 export default function Home() {
 	const [activeTab, setActiveTab] = useState("popular");
 	const [counter, setCounter] = useState(0);
-	const [isScrolled, setIsScrolled] = useState(false);
 
 	// Animation for number counter
 	useEffect(() => {
@@ -92,22 +91,6 @@ export default function Home() {
 			}
 		}, 50);
 		return () => clearInterval(interval);
-	}, [counter]);
-
-	// Animation for scroll detection
-	useEffect(() => {
-		const handleScroll = () => {
-			if (window.scrollY > 50) {
-				setIsScrolled(true);
-			} else {
-				setIsScrolled(false);
-			}
-		};
-
-		window.addEventListener("scroll", handleScroll);
-		return () => {
-			window.removeEventListener("scroll", handleScroll);
-		};
 	}, []);
 
 	return (
