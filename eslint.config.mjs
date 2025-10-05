@@ -5,147 +5,186 @@ import unusedImports from "eslint-plugin-unused-imports";
 import _import from "eslint-plugin-import";
 import typescriptEslint from "@typescript-eslint/eslint-plugin";
 import jsxA11Y from "eslint-plugin-jsx-a11y";
-import prettier from "eslint-plugin-prettier";
 import globals from "globals";
 import tsParser from "@typescript-eslint/parser";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import js from "@eslint/js";
 import { FlatCompat } from "@eslint/eslintrc";
+import nextPlugin from "@next/eslint-plugin-next";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const compat = new FlatCompat({
-    baseDirectory: __dirname,
-    recommendedConfig: js.configs.recommended,
-    allConfig: js.configs.all
+	baseDirectory: __dirname,
+	recommendedConfig: js.configs.recommended,
+	allConfig: js.configs.all,
 });
 
-export default defineConfig([globalIgnores([
-    ".now/*",
-    "**/*.css",
-    "**/.changeset",
-    "**/dist",
-    "esm/*",
-    "public/*",
-    "tests/*",
-    "scripts/*",
-    "**/*.config.js",
-    "**/.DS_Store",
-    "**/node_modules",
-    "**/coverage",
-    "**/.next",
-    "**/build",
-    "!**/.commitlintrc.cjs",
-    "!**/.lintstagedrc.cjs",
-    "!**/jest.config.js",
-    "!**/plopfile.js",
-    "!**/react-shim.js",
-    "!**/tsup.config.ts",
-]), {
-    extends: fixupConfigRules(compat.extends(
-        "plugin:react/recommended",
-        "plugin:prettier/recommended",
-        "plugin:react-hooks/recommended",
-        "plugin:jsx-a11y/recommended",
-        "plugin:@next/next/recommended",
-    )),
+export default defineConfig([
+	globalIgnores([
+		".now/*",
+		"**/*.css",
+		"**/.changeset",
+		"**/dist",
+		"esm/*",
+		"public/*",
+		"tests/*",
+		"scripts/*",
+		"**/*.config.js",
+		"**/.DS_Store",
+		"**/node_modules",
+		"**/coverage",
+		"**/.next",
+		"**/build",
+		"!**/.commitlintrc.cjs",
+		"!**/.lintstagedrc.cjs",
+		"!**/jest.config.js",
+		"!**/plopfile.js",
+		"!**/react-shim.js",
+		"!**/tsup.config.ts",
+		"**/prisma/generated",
+		"**/app/generated",
+	]),
+	{
+		extends: fixupConfigRules(
+			compat.extends(
+				"plugin:react/recommended",
+				"plugin:react-hooks/recommended",
+				"plugin:jsx-a11y/recommended",
+				"plugin:@next/next/recommended",
+			),
+		),
 
-    plugins: {
-        react: fixupPluginRules(react),
-        "unused-imports": unusedImports,
-        import: fixupPluginRules(_import),
-        "@typescript-eslint": typescriptEslint,
-        "jsx-a11y": fixupPluginRules(jsxA11Y),
-        prettier: fixupPluginRules(prettier),
-    },
+		plugins: {
+			react: fixupPluginRules(react),
+			"unused-imports": unusedImports,
+			import: fixupPluginRules(_import),
+			"@typescript-eslint": typescriptEslint,
+			"jsx-a11y": fixupPluginRules(jsxA11Y),
+			"@next/next": fixupPluginRules(nextPlugin),
+		},
 
-    languageOptions: {
-        globals: {
-            ...Object.fromEntries(Object.entries(globals.browser).map(([key]) => [key, "off"])),
-            ...globals.node,
-        },
+		languageOptions: {
+			globals: {
+				...Object.fromEntries(Object.entries(globals.browser).map(([key]) => [key, "off"])),
+				...globals.node,
+			},
 
-        parser: tsParser,
-        ecmaVersion: 12,
-        sourceType: "module",
+			parser: tsParser,
+			ecmaVersion: 12,
+			sourceType: "module",
 
-        parserOptions: {
-            ecmaFeatures: {
-                jsx: true,
-            },
-        },
-    },
+			parserOptions: {
+				ecmaFeatures: {
+					jsx: true,
+				},
+				project: "./tsconfig.json",
+				tsconfigRootDir: __dirname,
+			},
+		},
 
-    settings: {
-        react: {
-            version: "detect",
-        },
-    },
+		settings: {
+			react: {
+				version: "detect",
+			},
+			next: {
+				rootDir: __dirname,
+			},
+			"import/resolver": {
+				typescript: {
+					alwaysTryTypes: true,
+					project: "./tsconfig.json",
+				},
+				node: {
+					extensions: [".js", ".jsx", ".ts", ".tsx"],
+				},
+			},
+		},
 
-    files: ["**/*.ts", "**/*.tsx"],
+		files: ["**/*.ts", "**/*.tsx"],
 
-    rules: {
-        "no-console": "warn",
-        "react/prop-types": "off",
-        "react/jsx-uses-react": "off",
-        "react/react-in-jsx-scope": "off",
-        "react-hooks/exhaustive-deps": "off",
-        "jsx-a11y/click-events-have-key-events": "warn",
-        "jsx-a11y/interactive-supports-focus": "warn",
-        "prettier/prettier": "warn",
-        "no-unused-vars": "off",
-        "unused-imports/no-unused-vars": "off",
-        "unused-imports/no-unused-imports": "warn",
+		rules: {
+			"no-console": "off",
+			"react/prop-types": "off",
+			"react/jsx-uses-react": "off",
+			"react/react-in-jsx-scope": "off",
+			"react-hooks/exhaustive-deps": "off",
+			"jsx-a11y/click-events-have-key-events": "warn",
+			"jsx-a11y/interactive-supports-focus": "warn",
+			"no-unused-vars": "off",
+			"unused-imports/no-unused-vars": "off",
+			"unused-imports/no-unused-imports": "warn",
 
-        "@typescript-eslint/no-unused-vars": ["warn", {
-            args: "after-used",
-            ignoreRestSiblings: false,
-            argsIgnorePattern: "^_.*?$",
-        }],
+			"@typescript-eslint/no-unused-vars": [
+				"warn",
+				{
+					args: "after-used",
+					ignoreRestSiblings: false,
+					argsIgnorePattern: "^_.*?$",
+				},
+			],
 
-        "import/order": ["warn", {
-            groups: [
-                "type",
-                "builtin",
-                "object",
-                "external",
-                "internal",
-                "parent",
-                "sibling",
-                "index",
-            ],
+			"import/order": [
+				"off",
+				{
+					groups: [
+						"type",
+						"builtin",
+						"object",
+						"external",
+						"internal",
+						"parent",
+						"sibling",
+						"index",
+					],
 
-            pathGroups: [{
-                pattern: "~/**",
-                group: "external",
-                position: "after",
-            }],
+					pathGroups: [
+						{
+							pattern: "~/**",
+							group: "external",
+							position: "after",
+						},
+					],
 
-            "newlines-between": "always",
-        }],
+					"newlines-between": "always",
+				},
+			],
 
-        "react/self-closing-comp": "warn",
+			"react/self-closing-comp": "warn",
 
-        "react/jsx-sort-props": ["warn", {
-            callbacksLast: true,
-            shorthandFirst: true,
-            noSortAlphabetically: false,
-            reservedFirst: true,
-        }],
+			"react/jsx-sort-props": [
+				"warn",
+				{
+					callbacksLast: true,
+					shorthandFirst: true,
+					noSortAlphabetically: false,
+					reservedFirst: true,
+				},
+			],
 
-        "padding-line-between-statements": ["warn", {
-            blankLine: "always",
-            prev: "*",
-            next: "return",
-        }, {
-            blankLine: "always",
-            prev: ["const", "let", "var"],
-            next: "*",
-        }, {
-            blankLine: "any",
-            prev: ["const", "let", "var"],
-            next: ["const", "let", "var"],
-        }],
-    },
-}]);
+			"padding-line-between-statements": [
+				"warn",
+				{
+					blankLine: "always",
+					prev: "*",
+					next: "return",
+				},
+				{
+					blankLine: "always",
+					prev: ["const", "let", "var"],
+					next: "*",
+				},
+				{
+					blankLine: "any",
+					prev: ["const", "let", "var"],
+					next: ["const", "let", "var"],
+				},
+			],
+
+			"@next/next/no-html-link-for-pages": ["error", "app/"],
+			"@next/next/no-img-element": "warn",
+			"@next/next/no-sync-scripts": "error",
+		},
+	},
+]);

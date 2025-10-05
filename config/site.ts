@@ -1,50 +1,55 @@
 export type SiteConfig = typeof siteConfig;
 
 export const siteConfig = {
-  name: "Next.js + HeroUI",
-  description: "Make beautiful websites regardless of your design experience.",
+  name: "BrainiacWiz",
+  description:
+    "The multiplayer quiz platform where knowledge pays off. Win crypto with your knowledge.",
   navItems: [
     {
       label: "Home",
       href: "/",
     },
     {
-      label: "Docs",
-      href: "/docs",
+      label: "Play",
+      href: "/play/gamepin",
     },
     {
-      label: "Pricing",
-      href: "/pricing",
+      label: "Host",
+      href: "/host/create",
     },
     {
-      label: "Blog",
-      href: "/blog",
+      label: "Leaderboard",
+      href: "/play/leaderboard/global",
     },
     {
       label: "About",
       href: "/about",
     },
+    {
+      label: "Support",
+      href: "/support/faqs",
+    },
   ],
   navMenuItems: [
     {
-      label: "Profile",
+      label: "Play Quiz",
+      href: "/play/gamepin",
+    },
+    {
+      label: "Host Quiz",
+      href: "/host/create",
+    },
+    {
+      label: "My Dashboard",
       href: "/profile",
     },
     {
-      label: "Dashboard",
-      href: "/dashboard",
+      label: "My Quizzes",
+      href: "/host/quiz",
     },
     {
-      label: "Projects",
-      href: "/projects",
-    },
-    {
-      label: "Team",
-      href: "/team",
-    },
-    {
-      label: "Calendar",
-      href: "/calendar",
+      label: "Leaderboard",
+      href: "/play/leaderboard/global",
     },
     {
       label: "Settings",
@@ -60,10 +65,11 @@ export const siteConfig = {
     },
   ],
   links: {
-    github: "https://github.com/heroui-inc/heroui",
-    twitter: "https://twitter.com/hero_ui",
-    docs: "https://heroui.com",
-    discord: "https://discord.gg/9b6yyZKmH4",
-    sponsor: "https://patreon.com/jrgarciadev",
+    github: "https://github.com/BrainiacWizards/brainiacwiz-revamp",
+    twitter: "https://twitter.com/brainiacwiz",
+    docs: "/support/faqs",
+    discord: "https://discord.gg/brainiacwiz",
+    wallet: "https://valora.com",
+    leaderboard: "/play/leaderboard/global",
   },
 };

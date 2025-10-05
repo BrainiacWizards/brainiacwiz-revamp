@@ -4,11 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "prisma generate --no-engine && next build",
     "start": "next start",
-    "lint": "eslint --fix"
+    "lint": "eslint --fix",
+    "check": "eslint . --fix && tsc --noEmit",
+    "prisma:generate": "prisma generate"
   },
   "dependencies": {
+    "@eslint/compat": "^1.4.0",
     "@heroui/accordion": "2.2.23",
     "@heroui/alert": "2.2.26",
     "@heroui/autocomplete": "2.3.28",
@@ -65,7 +68,7 @@
     "react-dom": "18.3.1"
   },
   "devDependencies": {
-    "@next/eslint-plugin-next": "15.3.4",
+    "@next/eslint-plugin-next": "latest",
     "@react-types/shared": "3.30.0",
     "@tailwindcss/postcss": "4.1.11",
     "@types/node": "24.6.2",
@@ -89,6 +92,6 @@
     "prisma": "^6.16.3",
     "tailwind-variants": "3.1.1",
     "tailwindcss": "4.1.11",
-    "typescript": "5.9.3"
+    "typescript": "5.8.3"
   }
 }

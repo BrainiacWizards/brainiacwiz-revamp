@@ -2,13 +2,13 @@
 import React from "react";
 
 const QuizManagementPage = () => {
-	return (
-		<div>
-			<h1>Quiz Management</h1>
-			<p>Manage your quiz settings and players here.</p>
-			{/* Add more details and controls for managing the quiz */}
-		</div>
-	);
+  return (
+    <div>
+      <h1>Quiz Management</h1>
+      <p>Manage your quiz settings and players here.</p>
+      {/* Add more details and controls for managing the quiz */}
+    </div>
+  );
 };
 
 export default QuizManagementPage;

@@ -1,3 +1,4 @@
+"use client";
 // support contact page with a form to reach out for help and contact information
 import React, { useState } from "react";
 
@@ -30,33 +31,34 @@ const ContactPage = () => {
 				<div>
 					<label htmlFor="name">Name:</label>
 					<input
-						type="text"
+						required
 						id="name"
 						name="name"
+						type="text"
 						value={formData.name}
 						onChange={handleChange}
-						required
 					/>
 				</div>
 				<div>
 					<label htmlFor="email">Email:</label>
 					<input
-						type="email"
+						required
 						id="email"
 						name="email"
+						type="email"
 						value={formData.email}
 						onChange={handleChange}
-						required
 					/>
 				</div>
 				<div>
 					<label htmlFor="message">Message:</label>
 					<textarea
+						required
 						id="message"
 						name="message"
 						value={formData.message}
 						onChange={handleChange}
-						required></textarea>
+					/>
 				</div>
 				<button type="submit">Submit</button>
 			</form>

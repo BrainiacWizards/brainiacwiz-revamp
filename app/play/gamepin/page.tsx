@@ -1,3 +1,4 @@
+"use client";
 // page for entering game pin which will redirect to lobby page
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -16,11 +17,11 @@ const GamePinPage = () => {
 			<h1>Enter Game Pin</h1>
 			<form onSubmit={handleSubmit}>
 				<input
+					required
+					placeholder="Enter Game Pin"
 					type="text"
 					value={gamePin}
 					onChange={(e) => setGamePin(e.target.value)}
-					placeholder="Enter Game Pin"
-					required
 				/>
 				<button type="submit">Join Game</button>
 			</form>
