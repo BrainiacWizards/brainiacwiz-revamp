@@ -3,7 +3,7 @@ import prisma from "@/lib/prisma";
 
 export async function GET(request: Request, { params }: { params: { quizId: string } }) {
 	try {
-		const quizId = params.quizId;
+		const { quizId } = params;
 
 		const quiz = await prisma.quiz.findUnique({
 			where: { id: quizId },
