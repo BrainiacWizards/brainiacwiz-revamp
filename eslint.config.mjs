@@ -126,7 +126,7 @@ export default defineConfig([
 			],
 
 			"import/order": [
-				"warn",
+				"off",
 				{
 					groups: [
 						"type",
