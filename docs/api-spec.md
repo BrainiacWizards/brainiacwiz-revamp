@@ -29,7 +29,7 @@ Create a new quiz session.
     - `title`: string
     - `questions`: array of `{ question, options[], correctIndex }`
     - `duration`: number (seconds per question)
-    - `prizePool`: number (cUSD)
+    - `prize`: number (cUSD)
 - **Response**:
     - `quizId`: string
     - `status`: "created"

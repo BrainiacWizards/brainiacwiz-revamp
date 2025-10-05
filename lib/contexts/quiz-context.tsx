@@ -1,43 +1,18 @@
 "use client";
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { useRouter, usePathname } from "next/navigation";
-
-// Define our quiz-related types
-interface Player {
-	id: string;
-	name: string;
-	avatar: string;
-}
-
-interface Question {
-	id: string;
-	text: string;
-	options: string[];
-	correctOptionIndex: number;
-	timeLimit: number;
-}
-
-interface Quiz {
-	id: string;
-	title: string;
-	description?: string;
-	hostName: string;
-	gamePin: string;
-	questions?: Question[];
-	currentQuestion?: number;
-	status: "NOT_STARTED" | "LIVE" | "PAUSED" | "ENDED";
-	players?: Player[];
-}
+import { Question, Quiz } from "../generated/prisma";
+import { iPlayer } from "@/types";
 
 // Define the shape of our context
 interface QuizContextType {
 	// Quiz state
 	currentQuiz: Quiz | null;
 	gamePin: string | null;
-	players: Player[];
+	players: iPlayer[];
 	isLoading: boolean;
 	error: string | null;
+	questions: Question[] | null;
+	currentQuestion: number | null;
 
 	// Player info
 	playerName: string | null;
@@ -48,6 +23,7 @@ interface QuizContextType {
 	setPlayerName: (name: string) => void;
 	fetchQuizByPin: (pin: string) => Promise<void>;
 	fetchQuizById: (id: string) => Promise<void>;
+	fetchQuestions: (quizId: string) => Promise<void>;
 	joinQuiz: (pin: string, playerName: string) => Promise<boolean>;
 	startQuiz: () => Promise<boolean>;
 	answerQuestion: (questionId: string, answerIndex: number) => Promise<void>;
@@ -61,8 +37,10 @@ const QuizContext = createContext<QuizContextType | undefined>(undefined);
 export function QuizProvider({ children }: { children: ReactNode }) {
 	// State for quiz data
 	const [currentQuiz, setCurrentQuiz] = useState<Quiz | null>(null);
+	const [questions, setQuestions] = useState<Question[] | null>(null);
+	const [currentQuestion, setCurrentQuestion] = useState<number | null>(null);
 	const [gamePin, setGamePin] = useState<string | null>(null);
-	const [players, setPlayers] = useState<Player[]>([]);
+	const [players, setPlayers] = useState<iPlayer[]>([]);
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const [error, setError] = useState<string | null>(null);
 
@@ -93,6 +71,37 @@ export function QuizProvider({ children }: { children: ReactNode }) {
 			fetchQuizById(quizId);
 		}
 	}, []);
+
+	// Function to fetch questions for a quiz
+	const fetchQuestions = async (quizId: string): Promise<void> => {
+		if (!quizId) {
+			setError("Quiz ID is required to fetch questions");
+			return;
+		}
+
+		setIsLoading(true);
+		setError(null);
+
+		try {
+			const response = await fetch(`/api/questions/${quizId}`);
+
+			if (!response.ok) {
+				throw new Error(`Failed to fetch questions: ${response.statusText}`);
+			}
+
+			const data = await response.json();
+			setQuestions(data.questions);
+
+			if (currentQuiz) {
+				setCurrentQuestion(currentQuiz.currentQn || 0);
+			}
+		} catch (err) {
+			console.error("Error fetching questions:", err);
+			setError(err instanceof Error ? err.message : "Failed to fetch questions");
+		} finally {
+			setIsLoading(false);
+		}
+	};
 
 	// Function to validate and fetch a quiz by its game pin
 	const fetchQuizByPin = async (pin: string): Promise<void> => {
@@ -140,7 +149,6 @@ export function QuizProvider({ children }: { children: ReactNode }) {
 	const fetchQuizById = async (id: string): Promise<void> => {
 		if (!id) {
 			setError("Quiz ID is required");
-
 			return;
 		}
 
@@ -163,17 +171,33 @@ export function QuizProvider({ children }: { children: ReactNode }) {
 				{ id: "p3", name: "Player 3", avatar: "https://i.pravatar.cc/150?img=3" },
 			];
 
-			setCurrentQuiz({
+			const quizData: Quiz = {
 				id: data.id,
 				title: data.title,
-				description: data.description,
-				hostName: data.host?.name || "Quiz Host",
-				gamePin: gamePin || "",
+				gamePin: gamePin || data.gamePin || "",
+				hostId: data.hostId || "",
+				hostName: data.hostName || data.host?.name || "Quiz Host",
+				currentQn: data.currentQn ?? 0,
+				totalQns: data.totalQns ?? 0,
+				totalPlayers: data.totalPlayers ?? data.players?.length ?? 0,
+				prize: data.prize ?? 0,
+				difficulty: data.difficulty ?? "EASY",
+				timePerQn: data.timePerQn ?? 30,
+				createdAt: data.createdAt ? new Date(data.createdAt) : new Date(),
+				startedAt: data.startedAt ? new Date(data.startedAt) : null,
+				endedAt: data.endedAt ? new Date(data.endedAt) : null,
 				status: data.status,
-				questions: data.questions,
-			});
+				description: data.description ?? "",
+				imageUrl: data.imageUrl ?? "",
+				category: data.category ?? "",
+			};
 
+			setCurrentQuiz(quizData);
+			setCurrentQuestion(quizData.currentQn || 0);
 			setPlayers(mockPlayers);
+
+			// Fetch questions for this quiz
+			await fetchQuestions(id);
 		} catch (err) {
 			console.error("Error fetching quiz details:", err);
 			setError(err instanceof Error ? err.message : "Failed to fetch quiz details");
@@ -186,7 +210,6 @@ export function QuizProvider({ children }: { children: ReactNode }) {
 	const joinQuiz = async (pin: string, name: string): Promise<boolean> => {
 		if (!pin || !name) {
 			setError("Game pin and player name are required");
-
 			return false;
 		}
 
@@ -221,7 +244,6 @@ export function QuizProvider({ children }: { children: ReactNode }) {
 		} catch (err) {
 			console.error("Error joining quiz:", err);
 			setError(err instanceof Error ? err.message : "Failed to join quiz");
-
 			return false;
 		} finally {
 			setIsLoading(false);
@@ -232,7 +254,6 @@ export function QuizProvider({ children }: { children: ReactNode }) {
 	const startQuiz = async (): Promise<boolean> => {
 		if (!currentQuiz) {
 			setError("No quiz selected");
-
 			return false;
 		}
 
@@ -249,16 +270,17 @@ export function QuizProvider({ children }: { children: ReactNode }) {
 					? {
 							...prev,
 							status: "LIVE",
-							currentQuestion: 0,
+							currentQn: 0,
+							startedAt: new Date(),
 						}
 					: null,
 			);
 
+			setCurrentQuestion(0);
 			return true;
 		} catch (err) {
 			console.error("Error starting quiz:", err);
 			setError(err instanceof Error ? err.message : "Failed to start quiz");
-
 			return false;
 		} finally {
 			setIsLoading(false);
@@ -267,8 +289,8 @@ export function QuizProvider({ children }: { children: ReactNode }) {
 
 	// Function to submit an answer to a question
 	const answerQuestion = async (questionId: string, answerIndex: number): Promise<void> => {
-		if (!currentQuiz || !playerId) {
-			setError("No quiz or player selected");
+		if (!currentQuiz || !playerId || !questions) {
+			setError("No quiz, questions, or player selected");
 			return;
 		}
 
@@ -290,9 +312,8 @@ export function QuizProvider({ children }: { children: ReactNode }) {
 
 	// Function to move to the next question (for hosts)
 	const nextQuestion = async (): Promise<void> => {
-		if (!currentQuiz) {
-			setError("No quiz selected");
-
+		if (!currentQuiz || !questions) {
+			setError("No quiz or questions selected");
 			return;
 		}
 
@@ -301,24 +322,31 @@ export function QuizProvider({ children }: { children: ReactNode }) {
 			// For now, we'll simulate it with a delay
 			await new Promise((resolve) => setTimeout(resolve, 500));
 
-			setCurrentQuiz((prev) => {
-				if (!prev || !prev.questions || prev.currentQuestion === undefined) return prev;
+			const nextIndex = (currentQuestion !== null ? currentQuestion : -1) + 1;
 
-				const nextIndex = prev.currentQuestion + 1;
+			// Check if we've reached the end of the quiz
+			if (nextIndex >= questions.length) {
+				setCurrentQuiz((prev) =>
+					prev
+						? {
+								...prev,
+								status: "COMPLETED" as Quiz["status"],
+								endedAt: new Date(),
+							}
+						: null,
+				);
+				return;
+			}
 
-				// Check if we've reached the end of the quiz
-				if (nextIndex >= prev.questions.length) {
-					return {
-						...prev,
-						status: "ENDED",
-					};
-				}
-
-				return {
-					...prev,
-					currentQuestion: nextIndex,
-				};
-			});
+			setCurrentQuestion(nextIndex);
+			setCurrentQuiz((prev) =>
+				prev
+					? {
+							...prev,
+							currentQn: nextIndex,
+						}
+					: null,
+			);
 		} catch (err) {
 			console.error("Error advancing to next question:", err);
 			setError(err instanceof Error ? err.message : "Failed to advance to next question");
@@ -332,12 +360,15 @@ export function QuizProvider({ children }: { children: ReactNode }) {
 		players,
 		isLoading,
 		error,
+		questions,
+		currentQuestion,
 		playerName,
 		playerId,
 		setGamePin,
 		setPlayerName,
 		fetchQuizByPin,
 		fetchQuizById,
+		fetchQuestions,
 		joinQuiz,
 		startQuiz,
 		answerQuestion,

@@ -117,7 +117,7 @@ const LobbyPage = () => {
 							</Chip>
 						</div>
 						<p className="text-default-500">
-							Hosted by <span className="font-semibold">{currentQuiz.hostName}</span>
+							Hosted by <span className="font-semibold">{currentQuiz.hostId}</span>
 						</p>
 					</CardHeader>
 

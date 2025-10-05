@@ -28,7 +28,17 @@ export async function POST(request: NextRequest) {
 		const quiz = await prisma.quiz.findFirst({
 			where: {
 				gamePin: gamePin,
-				status: "LIVE", // Only allow joining active quizzes
+				OR: [
+					{ status: "LIVE" },
+					{ status: "DRAFT" }, // Allow joining draft quizzes as well for lobby waiting
+				],
+			},
+			select: {
+				id: true,
+				title: true,
+				hostId: true,
+				hostName: true,
+				status: true,
 			},
 		});
 
@@ -39,14 +49,13 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
-		// Create player session or record if needed
-		// Note: In a real implementation, you might want to create a player session here
-
 		// Return success with quiz ID
 		return NextResponse.json({
 			message: "Game pin validated successfully",
 			quizId: quiz.id,
-			// You might want to return additional data about the quiz here
+			quizTitle: quiz.title,
+			hostName: quiz.hostName,
+			status: quiz.status,
 		});
 	} catch (error) {
 		console.error("Error validating game pin:", error);

@@ -1,135 +1,173 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { Difficulty, QuizStatus } from "@/lib/generated/prisma";
 
 import prisma from "@/lib/prisma";
 import { getCurrentUser, getOrCreateDbUser } from "@/lib/auth";
-import { Prisma } from "@/app/generated/prisma";
 
-export async function POST(request: Request) {
-  try {
-    // Get current authenticated user
-    const authUser = await getCurrentUser();
+export async function POST(request: NextRequest) {
+	try {
+		// Get current authenticated user
+		const currentUser = await getCurrentUser();
 
-    if (!authUser) {
-      return NextResponse.json(
-        { error: "Authentication required" },
-        { status: 401 },
-      );
-    }
+		if (!currentUser) {
+			return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+		}
 
-    // Ensure user exists in our database
-    const dbUser = await getOrCreateDbUser(authUser);
+		// Ensure user exists in our database
+		const dbUser = await getOrCreateDbUser(currentUser);
 
-    // Parse the request body
-    const body = await request.json();
-    const { title, questions, prizePool } = body;
+		// Parse the request body
+		const body = await request.json();
+		const {
+			title,
+			description = "",
+			questions,
+			prize = 0,
+			category = "general",
+			difficulty = "EASY",
+			timePerQn = 30,
+			imageUrl = "",
+		} = body;
 
-    // Validation
-    if (!title) {
-      return NextResponse.json(
-        { error: "Quiz title is required" },
-        { status: 400 },
-      );
-    }
+		// Validation
+		if (!title) {
+			return NextResponse.json({ error: "Quiz title is required" }, { status: 400 });
+		}
 
-    if (!questions || !Array.isArray(questions) || questions.length === 0) {
-      return NextResponse.json(
-        { error: "At least one question is required" },
-        { status: 400 },
-      );
-    }
+		if (!questions || !Array.isArray(questions) || questions.length === 0) {
+			return NextResponse.json(
+				{ error: "At least one question is required" },
+				{ status: 400 },
+			);
+		}
 
-    for (const q of questions) {
-      if (
-        !q.text ||
-        !q.options ||
-        q.options.length < 2 ||
-        q.correctIdx === undefined
-      ) {
-        return NextResponse.json(
-          {
-            error:
-              "Each question must have text, at least 2 options, and a correct answer index",
-          },
-          { status: 400 },
-        );
-      }
-    }
+		for (const q of questions) {
+			if (!q.text || !q.options || q.options.length < 2 || q.correctIdx === undefined) {
+				return NextResponse.json(
+					{
+						error: "Each question must have text, at least 2 options, and a correct answer index",
+					},
+					{ status: 400 },
+				);
+			}
+		}
 
-    // Create the quiz and its questions in a transaction
-    const quiz = await prisma.$transaction(
-      async (tx: Prisma.TransactionClient) => {
-        // Create the quiz
-        const newQuiz = await tx.quiz.create({
-          data: {
-            title,
-            prizePool: prizePool || 0,
-            hostId: dbUser.id,
-            status: "DRAFT",
-          },
-        });
+		// Generate a random 6-digit game pin
+		const gamePin = Math.floor(100000 + Math.random() * 900000).toString();
 
-        // Add questions
-        for (let i = 0; i < questions.length; i++) {
-          const q = questions[i];
+		// Create the quiz and its questions in a transaction
+		const quiz = await prisma.$transaction(async (tx) => {
+			// Create the quiz
+			const newQuiz = await tx.quiz.create({
+				data: {
+					title,
+					description,
+					gamePin,
+					hostId: dbUser.id,
+					hostName: dbUser.name || "Quiz Host",
+					status: "DRAFT",
+					prize: parseFloat(prize.toString()),
+					totalQns: questions.length,
+					difficulty,
+					timePerQn,
+					category,
+					imageUrl,
+				},
+			});
 
-          await tx.question.create({
-            data: {
-              quizId: newQuiz.id,
-              text: q.text,
-              options: q.options,
-              correctIdx: q.correctIdx,
-              order: i,
-            },
-          });
-        }
+			// Add questions
+			for (let i = 0; i < questions.length; i++) {
+				const q = questions[i];
 
-        return tx.quiz.findUnique({
-          where: { id: newQuiz.id },
-          include: {
-            questions: {
-              orderBy: { order: "asc" },
-            },
-          },
-        });
-      },
-    );
+				await tx.question.create({
+					data: {
+						quizId: newQuiz.id,
+						text: q.text,
+						options: q.options,
+						correctIdx: q.correctIdx,
+						order: i,
+					},
+				});
+			}
 
-    return NextResponse.json({
-      message: "Quiz created successfully",
-      quiz,
-    });
-  } catch (error) {
-    console.error("Error creating quiz:", error);
+			return tx.quiz.findUnique({
+				where: { id: newQuiz.id },
+				include: {
+					questions: {
+						orderBy: { order: "asc" },
+					},
+				},
+			});
+		});
 
-    return NextResponse.json(
-      { error: "Failed to create quiz" },
-      { status: 500 },
-    );
-  }
+		return NextResponse.json({
+			message: "Quiz created successfully",
+			quiz,
+		});
+	} catch (error) {
+		console.error("Error creating quiz:", error);
+
+		return NextResponse.json({ error: "Failed to create quiz" }, { status: 500 });
+	}
 }
 
-// Get all quizzes (for admin or development purposes)
-export async function GET() {
-  try {
-    const quizzes = await prisma.quiz.findMany({
-      include: {
-        questions: true,
-        host: {
-          select: {
-            name: true,
-            email: true,
-          },
-        },
-      },
-    });
+// Get all quizzes (with filtering options)
+export async function GET(request: NextRequest) {
+	try {
+		const { searchParams } = new URL(request.url);
 
-    return NextResponse.json(quizzes);
-  } catch (error) {
-    console.error("Error fetching quizzes:", error);
+		// Extract filter parameters
+		const hostId = searchParams.get("hostId");
+		const status = searchParams.get("status") as QuizStatus | null;
+		const difficulty = searchParams.get("difficulty") as Difficulty | null;
+		const category = searchParams.get("category");
+		const limit = searchParams.get("limit") ? parseInt(searchParams.get("limit")!) : 10;
+		const offset = searchParams.get("offset") ? parseInt(searchParams.get("offset")!) : 0;
 
-    return NextResponse.json(
-      { error: "Failed to fetch quizzes" },
-      { status: 500 },
-    );
-  }
+		// Build the query filters with proper type handling
+		const where: any = {};
+
+		if (hostId) where.hostId = hostId;
+		if (status) where.status = status;
+		if (difficulty) where.difficulty = difficulty;
+		if (category) where.category = category;
+
+		// Get count of matching quizzes
+		const totalCount = await prisma.quiz.count({ where });
+
+		// Get the quizzes with pagination
+		const quizzes = await prisma.quiz.findMany({
+			where,
+			include: {
+				host: {
+					select: {
+						name: true,
+						email: true,
+					},
+				},
+				_count: {
+					select: {
+						submissions: true,
+					},
+				},
+			},
+			orderBy: { createdAt: "desc" },
+			skip: offset,
+			take: limit,
+		});
+
+		return NextResponse.json({
+			quizzes,
+			pagination: {
+				total: totalCount,
+				offset,
+				limit,
+				hasMore: offset + quizzes.length < totalCount,
+			},
+		});
+	} catch (error) {
+		console.error("Error fetching quizzes:", error);
+
+		return NextResponse.json({ error: "Failed to fetch quizzes" }, { status: 500 });
+	}
 }

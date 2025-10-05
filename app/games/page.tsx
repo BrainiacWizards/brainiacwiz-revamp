@@ -11,140 +11,17 @@ import { Input } from "@heroui/input";
 import { Pagination } from "@heroui/pagination";
 import { FilterIcon, SearchIcon, SortIcon } from "@/components/icons";
 import Link from "next/link";
-
-// Types
-type QuizCategory =
-	| "All"
-	| "Crypto"
-	| "Blockchain"
-	| "NFTs"
-	| "DeFi"
-	| "Gaming"
-	| "Technology"
-	| "Science"
-	| "History"
-	| "General";
-
-interface Quiz {
-	id: string;
-	title: string;
-	description?: string;
-	questions: number;
-	players: number;
-	prize: number;
-	category: string;
-	image: string;
-	difficulty?: "easy" | "medium" | "hard";
-	createdAt?: string;
-}
+import { iQuizCategory } from "@/types";
+import { sampleQuizzes } from "@/lib/data";
+import { Difficulty, Quiz } from "@/lib/generated/prisma";
 
 // Sample quiz data (will be replaced with API call)
-const sampleQuizzes: Quiz[] = [
-	{
-		id: "1",
-		title: "Crypto Basics",
-		description: "Learn the fundamentals of cryptocurrency in this beginner-friendly quiz.",
-		questions: 10,
-		players: 1243,
-		prize: 250,
-		category: "Crypto",
-		image: "https://images.unsplash.com/photo-1639322537504-6427a16b0a28?q=80&w=500&h=300&auto=format&fit=crop",
-		difficulty: "easy",
-		createdAt: "2025-09-20",
-	},
-	{
-		id: "2",
-		title: "Blockchain Masters",
-		description: "Test your knowledge of advanced blockchain concepts and technologies.",
-		questions: 15,
-		players: 987,
-		prize: 500,
-		category: "Blockchain",
-		image: "https://images.unsplash.com/photo-1639322537228-f710d846310a?q=80&w=500&h=300&auto=format&fit=crop",
-		difficulty: "hard",
-		createdAt: "2025-09-25",
-	},
-	{
-		id: "3",
-		title: "NFT Knowledge",
-		description: "Everything you need to know about Non-Fungible Tokens in one quiz.",
-		questions: 8,
-		players: 654,
-		prize: 150,
-		category: "NFTs",
-		image: "https://images.unsplash.com/photo-1646458590637-ec1b2cdcb95d?q=80&w=500&h=300&auto=format&fit=crop",
-		difficulty: "medium",
-		createdAt: "2025-09-28",
-	},
-	{
-		id: "4",
-		title: "DeFi Exploration",
-		description: "Explore the world of Decentralized Finance in this comprehensive quiz.",
-		questions: 12,
-		players: 432,
-		prize: 300,
-		category: "DeFi",
-		image: "https://images.unsplash.com/photo-1620321023374-d1a68fbc720d?q=80&w=500&h=300&auto=format&fit=crop",
-		difficulty: "medium",
-		createdAt: "2025-09-30",
-	},
-	{
-		id: "5",
-		title: "Gaming in Crypto",
-		description: "Where gaming and cryptocurrency meet. Test your knowledge!",
-		questions: 10,
-		players: 876,
-		prize: 200,
-		category: "Gaming",
-		image: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=500&h=300&auto=format&fit=crop",
-		difficulty: "easy",
-		createdAt: "2025-10-01",
-	},
-	{
-		id: "6",
-		title: "Tech Innovations",
-		description: "Quiz about the latest technology innovations changing our world.",
-		questions: 14,
-		players: 765,
-		prize: 350,
-		category: "Technology",
-		image: "https://images.unsplash.com/photo-1581090700227-1e37b190418e?q=80&w=500&h=300&auto=format&fit=crop",
-		difficulty: "medium",
-		createdAt: "2025-10-02",
-	},
-	{
-		id: "7",
-		title: "Science Quiz",
-		description: "Test your knowledge of scientific discoveries and principles.",
-		questions: 15,
-		players: 543,
-		prize: 275,
-		category: "Science",
-		image: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?q=80&w=500&h=300&auto=format&fit=crop",
-		difficulty: "hard",
-		createdAt: "2025-10-03",
-	},
-	{
-		id: "8",
-		title: "History Mysteries",
-		description: "Journey through time with this history-themed quiz challenge.",
-		questions: 12,
-		players: 432,
-		prize: 225,
-		category: "History",
-		image: "https://images.unsplash.com/photo-1461360370896-922624d12aa1?q=80&w=500&h=300&auto=format&fit=crop",
-		difficulty: "medium",
-		createdAt: "2025-10-04",
-	},
-];
 
 export default function GamesPage() {
 	const [searchQuery, setSearchQuery] = useState("");
-	const [selectedCategory, setSelectedCategory] = useState<QuizCategory>("All");
+	const [selectedCategory, setSelectedCategory] = useState<iQuizCategory>("All");
 	const [sortOrder, setSortOrder] = useState<"newest" | "prize" | "players">("newest");
-	const [selectedDifficulty, setSelectedDifficulty] = useState<
-		"all" | "easy" | "medium" | "hard"
-	>("all");
+	const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty | "all">("all");
 	const [filteredQuizzes, setFilteredQuizzes] = useState<Quiz[]>(sampleQuizzes);
 	const [page, setPage] = useState(1);
 	const rowsPerPage = 8;
@@ -186,7 +63,7 @@ export default function GamesPage() {
 				result.sort((a, b) => b.prize - a.prize);
 				break;
 			case "players":
-				result.sort((a, b) => b.players - a.players);
+				result.sort((a, b) => b.totalPlayers - a.totalPlayers);
 				break;
 		}
 
@@ -245,7 +122,7 @@ export default function GamesPage() {
 							<DropdownMenu
 								aria-label="Quiz Categories"
 								selectedKeys={[selectedCategory]}
-								onAction={(key) => setSelectedCategory(key as QuizCategory)}>
+								onAction={(key) => setSelectedCategory(key as iQuizCategory)}>
 								<DropdownItem key="All">All Categories</DropdownItem>
 								<DropdownItem key="Crypto">Cryptocurrency</DropdownItem>
 								<DropdownItem key="Blockchain">Blockchain</DropdownItem>
@@ -272,7 +149,7 @@ export default function GamesPage() {
 								aria-label="Quiz Difficulty"
 								selectedKeys={[selectedDifficulty]}
 								onAction={(key) =>
-									setSelectedDifficulty(key as "all" | "easy" | "medium" | "hard")
+									setSelectedDifficulty(key as Difficulty | "all")
 								}>
 								<DropdownItem key="all">All Difficulties</DropdownItem>
 								<DropdownItem key="easy">Easy</DropdownItem>
@@ -325,7 +202,7 @@ export default function GamesPage() {
 										alt={quiz.title}
 										className="object-cover h-48 max-h-48 w-full"
 										height={300}
-										src={quiz.image}
+										src={quiz.imageUrl || ""}
 										width={500}
 									/>
 								</CardHeader>
@@ -345,7 +222,7 @@ export default function GamesPage() {
 									</p>
 									<div className="flex gap-2 mt-2">
 										<Chip size="sm" variant="flat">
-											{quiz.questions} questions
+											{quiz.totalQns} questions
 										</Chip>
 										<Chip size="sm" variant="flat">
 											{quiz.category}

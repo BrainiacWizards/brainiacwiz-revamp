@@ -6,7 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../app/generated/prisma"
+  output   = "../lib/generated/prisma"
 }
 
 datasource db {
@@ -31,9 +31,18 @@ model Quiz {
   title       String
   gamePin     String?      @unique // 6-digit pin for players to join
   hostId      String
+  hostName    String
   host        User         @relation("HostQuizzes", fields: [hostId], references: [id])
-  questions   Question[]
-  prizePool   Float
+  questions   Question[] @relation("QuizQuestions")
+  currentQn   Int?         // index of the current question
+  totalQns    Int
+  totalPlayers Int         @default(0)
+  difficulty  Difficulty
+  timePerQn   Int          // in seconds
+  description String
+  imageUrl    String?
+  category    String
+  prize       Float
   status      QuizStatus   @default(DRAFT)
   createdAt   DateTime     @default(now())
   startedAt   DateTime?
@@ -44,7 +53,7 @@ model Quiz {
 model Question {
   id         String   @id @default(cuid())
   quizId     String
-  quiz       Quiz     @relation(fields: [quizId], references: [id])
+  quiz       Quiz     @relation("QuizQuestions", fields: [quizId], references: [id])
   text       String
   options    String[] // Array of answer choices
   correctIdx Int
@@ -90,4 +99,10 @@ enum QuizStatus {
   LIVE
   COMPLETED
   CANCELLED
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
 }

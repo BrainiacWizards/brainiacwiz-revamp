@@ -43,8 +43,7 @@ export default defineConfig([
 		"!**/plopfile.js",
 		"!**/react-shim.js",
 		"!**/tsup.config.ts",
-		"**/prisma/generated",
-		"**/app/generated",
+		"**/lib/generated",
 	]),
 	{
 		extends: fixupConfigRules(

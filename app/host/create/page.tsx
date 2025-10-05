@@ -38,7 +38,7 @@ export default function CreateQuizPage() {
 	const [quizTitle, setQuizTitle] = useState("");
 	const [quizDescription, setQuizDescription] = useState("");
 	const [category, setCategory] = useState("");
-	const [prizePool, setPrizePool] = useState(100);
+	const [prize, setprize] = useState(100);
 	const [timePerQuestion, setTimePerQuestion] = useState(30);
 
 	// Questions
@@ -163,7 +163,7 @@ export default function CreateQuizPage() {
 					title: quizTitle,
 					description: quizDescription,
 					category,
-					prizePool,
+					prize,
 					timePerQuestion,
 					questions: questions.map((q) => ({
 						text: q.text,
@@ -453,10 +453,10 @@ export default function CreateQuizPage() {
 														</div>
 													}
 													type="number"
-													value={prizePool.toString()}
+													value={prize.toString()}
 													variant="bordered"
 													onChange={(e) =>
-														setPrizePool(Number(e.target.value))
+														setprize(Number(e.target.value))
 													}
 												/>
 												<div className="mt-2">
@@ -468,17 +468,17 @@ export default function CreateQuizPage() {
 														<div
 															className={`absolute h-1.5 bg-gradient-to-r from-blue-300 to-blue-600 rounded-full transition-all duration-300`}
 															style={{
-																width: `${Math.min(100, prizePool / 5)}%`,
+																width: `${Math.min(100, prize / 5)}%`,
 															}}
 														/>
-														{prizePool >= 100 && (
+														{prize >= 100 && (
 															<div className="absolute -right-1 -top-0.5 h-2.5 w-2.5 bg-blue-600 rounded-full" />
 														)}
 													</div>
 													<p className="mt-1 text-xs text-default-500">
-														{prizePool < 50
+														{prize < 50
 															? "Low prizes attract fewer players"
-															: prizePool < 100
+															: prize < 100
 																? "Moderate prize pool will attract average players"
 																: "Excellent! High prize pools attract more players"}
 													</p>
@@ -648,7 +648,7 @@ export default function CreateQuizPage() {
 													</p>
 												</div>
 												<Chip color="success" variant="shadow">
-													${prizePool} Prize
+													${prize} Prize
 												</Chip>
 											</div>
 
