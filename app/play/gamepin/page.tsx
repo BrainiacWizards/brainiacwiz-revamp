@@ -10,40 +10,32 @@ import { addToast } from "@heroui/toast";
 import { Divider } from "@heroui/divider";
 import { Tooltip } from "@heroui/tooltip";
 import { KeyRound, Shield, Lock, CheckCircle2, AlertCircle, Hash } from "lucide-react";
+import { useQuiz } from "@/lib/contexts/quiz-context";
 
 const GamePinPage = () => {
-	const [gamePin, setGamePin] = useState("");
-	const [isLoading, setIsLoading] = useState(false);
-	const [error, setError] = useState("");
+	// Use our quiz context
+	const { fetchQuizByPin, isLoading, error } = useQuiz();
+
+	const [localPin, setLocalPin] = useState("");
+	const [isPinSecure, setIsPinSecure] = useState(false);
 	const router = useRouter();
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 
-		if (!gamePin) {
-			setError("Please enter a game pin");
+		if (!localPin) {
+			addToast({
+				title: "Error",
+				description: "Please enter a game pin",
+				color: "danger",
+			});
 
 			return;
 		}
 
-		setIsLoading(true);
-		setError("");
-
 		try {
-			// Make API call to validate the game pin
-			const response = await fetch(`/api/quiz/validate-pin`, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({ gamePin }),
-			});
-
-			const data = await response.json();
-
-			if (!response.ok) {
-				throw new Error(data.error || "Failed to validate game pin");
-			}
+			// Use the context function to validate the pin
+			await fetchQuizByPin(localPin);
 
 			// Show success message
 			addToast({
@@ -52,30 +44,20 @@ const GamePinPage = () => {
 				color: "success",
 			});
 
-			// Redirect to the lobby with the quiz ID
+			// Redirect to the lobby
 			setTimeout(() => {
-				router.push(`/play/lobby?quizId=${data.quizId}&gamePin=${gamePin}`);
+				router.push("/play/lobby");
 			}, 1000);
 		} catch (err) {
-			console.error("Error validating game pin:", err);
-			setError(err instanceof Error ? err.message : "Failed to validate game pin");
-			addToast({
-				title: "Error",
-				description: err instanceof Error ? err.message : "Failed to validate game pin",
-				color: "danger",
-			});
-		} finally {
-			setIsLoading(false);
+			console.error("Error handling game pin submission:", err);
 		}
 	};
-
-	const [isPinSecure, setIsPinSecure] = useState(false);
 
 	// Check pin security when it changes
 	const handlePinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const value = e.target.value;
 
-		setGamePin(value);
+		setLocalPin(value);
 		// Simple validation: consider pin "secure" if it's 6 digits
 		setIsPinSecure(value.length === 6 && /^\d{6}$/.test(value));
 	};
@@ -112,7 +94,7 @@ const GamePinPage = () => {
 
 							<Input
 								autoComplete="off"
-								errorMessage={error}
+								errorMessage={error || ""}
 								id="gamePin"
 								inputMode="numeric"
 								isInvalid={!!error}
@@ -127,14 +109,14 @@ const GamePinPage = () => {
 										<Hash className="text-default-400" size={18} />
 									</div>
 								}
-								value={gamePin}
+								value={localPin}
 								variant="bordered"
 								onChange={handlePinChange}
 							/>
 
 							{/* Pin security indicator */}
 							<div className="flex items-center gap-2 mt-1 h-5">
-								{gamePin.length > 0 && (
+								{localPin.length > 0 && (
 									<>
 										{isPinSecure ? (
 											<div className="flex items-center gap-2 text-xs text-success">
@@ -168,7 +150,7 @@ const GamePinPage = () => {
 					<Button
 						className="w-full font-medium"
 						color="primary"
-						disabled={!gamePin || isLoading || !isPinSecure}
+						disabled={!localPin || isLoading || !isPinSecure}
 						isLoading={isLoading}
 						size="lg"
 						spinner={<Spinner color="current" size="sm" />}
