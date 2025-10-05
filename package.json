@@ -52,6 +52,8 @@
     "@heroui/user": "2.2.21",
     "@prisma/client": "^6.16.3",
     "@prisma/extension-accelerate": "^2.0.2",
+    "@prisma/extension-optimize": "^2.0.0",
+    "@prisma/instrumentation": "^6",
     "@react-aria/ssr": "3.9.10",
     "@react-aria/visually-hidden": "3.8.27",
     "clsx": "2.1.1",
