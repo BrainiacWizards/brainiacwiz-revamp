@@ -1,0 +1,92 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String        @id @default(cuid())
+  clerkId     String        @unique
+  email       String        @unique
+  name        String?
+  wallet      String?       @unique
+  createdAt   DateTime      @default(now())
+  quizzes     Quiz[]        @relation("HostQuizzes")
+  submissions Submission[]
+  Leaderboard Leaderboard[]
+}
+
+model Quiz {
+  id          String       @id @default(cuid())
+  title       String
+  hostId      String
+  host        User         @relation("HostQuizzes", fields: [hostId], references: [id])
+  questions   Question[]
+  prizePool   Float
+  status      QuizStatus   @default(DRAFT)
+  createdAt   DateTime     @default(now())
+  startedAt   DateTime?
+  endedAt     DateTime?
+  submissions Submission[]
+}
+
+model Question {
+  id         String   @id @default(cuid())
+  quizId     String
+  quiz       Quiz     @relation(fields: [quizId], references: [id])
+  text       String
+  options    String[] // Array of answer choices
+  correctIdx Int
+  order      Int
+}
+
+model Submission {
+  id        String   @id @default(cuid())
+  quizId    String
+  userId    String
+  quiz      Quiz     @relation(fields: [quizId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+  answers   Json // Array of { questionId, selectedIndex }
+  score     Int
+  rank      Int?
+  createdAt DateTime @default(now())
+}
+
+model Leaderboard {
+  id        String   @id @default(cuid())
+  quizId    String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  totalWins Int      @default(0)
+  avgScore  Float    @default(0.0)
+  updatedAt DateTime @updatedAt
+}
+
+model Reward {
+  id          String   @id @default(cuid())
+  quizId      String
+  userId      String
+  wallet      String
+  amount      Float
+  nftMetadata Json?
+  txHash      String?
+  createdAt   DateTime @default(now())
+}
+
+// enums
+enum QuizStatus {
+  DRAFT
+  LIVE
+  COMPLETED
+  CANCELLED
+}
